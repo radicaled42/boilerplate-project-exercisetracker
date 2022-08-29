@@ -145,27 +145,22 @@ app.post("/api/users/:_id/exercises", (request, response) => {
   });
 });
 
-app.get("/api/users/:_id/logs", (request, response) => {
+app.get("/api/users/:_id/logs", function (req, res) {
   //Get the parameters
-  const userID = request.params._id;
-  const from = request.query.from;
-  const to = request.query.to;
-  const limit = request.query.limit;
+  let from = req.query.from;
+  let to = req.query.to;
+  let limit = req.query.limit;
 
-  console.log(
-    `Request recived from: ${userID}, from ${from} to ${to} number of records ${limit}`
-  );
-
-  // 1. Search for the user
-  User.findById(userID, function (err, existingUser) {
+  //Get user info first
+  User.findById(req.params["_id"], function (err, data) {
     if (err) return console.log(err);
-    if (existingUser) {
-      let username = existingUser.username;
-
-      console.log(`User ${username} found`);
-
+    if (data) {
+      //
+      let username = data.username;
+      let userid = data._id;
+      //Check if date string is exist, if yes, convert to date, if not, apply current date
       let query = {
-        userid: userID,
+        userid: userid,
       };
 
       const regex = /^\d{4}-\d{2}-\d{2}$/;
@@ -190,26 +185,23 @@ app.get("/api/users/:_id/logs", (request, response) => {
         query.date = { $lte: to };
       }
 
-      console.log(`Query created ${query}`);
-
       Exercise.find(query)
         .limit(limit && !isNaN(limit) ? limit : 0)
         .select({ userid: 0 })
-        .exec(function (err, existingExercise) {
+        .exec(function (err, data) {
           if (err) return console.error(err);
-          console.log(`Exercise found: ${existingExercise}`);
-          existingExercise = existingExercise.map((d) => {
+          data = data.map((d) => {
             return {
               description: d.description,
               duration: d.duration,
               date: d.date.toDateString(),
             };
           });
-          response.json({
+          res.json({
             username: username,
-            count: existingExercise.length ? existingExercise.length : 0,
-            _id: userID,
-            log: existingExercise,
+            count: data.length ? data.length : 0,
+            _id: userid,
+            log: data,
           });
         });
     } else {
