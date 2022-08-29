@@ -147,15 +147,75 @@ app.post("/api/users/:_id/exercises", (request, response) => {
 
 app.get("/api/users/:_id/logs", (request, response) => {
   //Get the parameters
-  let userID = request.params._id;
-  let from = request.query.from;
-  let to = request.query.to;
-  let limit = request.query.limit;
+  const userID = request.params._id;
+  const from = request.query.from;
+  const to = request.query.to;
+  const limit = request.query.limit;
 
   console.log(
-    `Request recived from: ${userID}, with the param ${from}, from ${to} number of records ${limit}`
+    `Request recived from: ${userID}, from ${from} to ${to} number of records ${limit}`
   );
-  console.log("Get the logs for this userID " + userID);
+
+  // 1. Search for the user
+  User.findById(userID, function (err, existingUser) {
+    if (err) return console.log(err);
+    if (existingUser) {
+      let username = existingUser.username;
+
+      console.log(`User ${username} found`);
+
+      let query = {
+        userid: userID,
+      };
+
+      const regex = /^\d{4}-\d{2}-\d{2}$/;
+      if (
+        from &&
+        from.match(regex) !== null &&
+        to &&
+        to.match(regex) !== null
+      ) {
+        query.date = { $gte: from, $lte: to };
+      } else if (
+        from &&
+        from.match(regex) !== null &&
+        (!to || to.match(regex) === null)
+      ) {
+        query.date = { $gte: from };
+      } else if (
+        to &&
+        to.match(regex) !== null &&
+        (!from || from.match(regex) === null)
+      ) {
+        query.date = { $lte: to };
+      }
+
+      console.log(`Query created ${query}`);
+
+      Exercise.find(query)
+        .limit(limit && !isNaN(limit) ? limit : 0)
+        .select({ userid: 0 })
+        .exec(function (err, existingExercise) {
+          if (err) return console.error(err);
+          console.log(`Exercise found: ${existingExercise}`);
+          existingExercise = existingExercise.map((d) => {
+            return {
+              description: d.description,
+              duration: d.duration,
+              date: d.date.toDateString(),
+            };
+          });
+          response.json({
+            username: username,
+            count: existingExercise.length ? existingExercise.length : 0,
+            _id: userID,
+            log: existingExercise,
+          });
+        });
+    } else {
+      res.json({ Error: "Invaild user id." });
+    }
+  });
 });
 
 const listener = app.listen(process.env.PORT || 3000, () => {
