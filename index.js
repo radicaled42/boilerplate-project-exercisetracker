@@ -50,30 +50,24 @@ let Exercise = mongoose.model("Exercise", exerciseSchema);
 //   _id: "5fb5853f734231456ccb3b05"
 // }
 
-app.post("/api/users", (request, response) => {
-  const newUsername = request.body.username;
-  console.log(
-    `Create a user ${newUsername} if it doesn't exists and return the ID`
-  );
-  User.find({ username: newUsername }, function (err, existingUser) {
-    if (err) return console.error(err);
-    // console.log(existingUser);
-    if (existingUser.length === 0) {
-      console.log("The user doesn't exist - Create user");
-      let newUser = new User({
-        username: newUsername,
-      });
-      newUser.save(function (err, resultCreation) {
-        if (err) return console.error(err);
-        // console.log(resultCreation);
-        response.json(resultCreation);
-      });
-    } else {
-      console.log("The user exist - Show User");
-      response.json(existingUser);
-    }
+app
+  .route("/api/users")
+  .get((req, res) => {
+    User.find({}, function (err, data) {
+      if (err) return console.error(err);
+      res.json(data);
+    });
+  })
+  .post((req, res) => {
+    let newUser = new User({
+      username: req.body.username,
+    });
+
+    newUser.save(function (err, data) {
+      if (err) return console.log(err);
+      res.json(data);
+    });
   });
-});
 
 app.post("/api/users/remove", (request, response) => {
   const newUsername = request.query.username;
