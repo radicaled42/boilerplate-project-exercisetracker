@@ -145,6 +145,10 @@ app.get("/api/users/:_id/logs", function (req, res) {
   let to = req.query.to;
   let limit = req.query.limit;
 
+  console.log(
+    `Request ID: ${req.params["_id"]} - From: ${from} - To: ${to} - Limit: ${limit}`
+  );
+
   //Get user info first
   User.findById(req.params["_id"], function (err, data) {
     if (err) return console.log(err);
@@ -156,6 +160,8 @@ app.get("/api/users/:_id/logs", function (req, res) {
       let query = {
         userid: userid,
       };
+
+      console.log(username);
 
       const regex = /^\d{4}-\d{2}-\d{2}$/;
       if (
