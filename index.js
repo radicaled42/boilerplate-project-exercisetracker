@@ -93,6 +93,9 @@ app.post("/api/users/remove", (request, response) => {
 //Create Exercise
 app.post("/api/users/:_id/exercises", function (req, res) {
   //Check if user can be find, if not, return user not found
+  console.log(
+    `Create new Exercise - UID: ${req.params["_id"]} - Description: ${req.body.description} - Duration: ${req.body.duration} - Date: ${req.body.date}`
+  );
   User.findById(req.params["_id"], function (err, data) {
     if (err) return console.log(err);
     if (data) {
@@ -108,7 +111,7 @@ app.post("/api/users/:_id/exercises", function (req, res) {
 
       newExercise.save(function (err, data) {
         if (err) return console.log(err);
-        console.log(data);
+        // console.log(data);
         res.json({
           username: username,
           description: data.description,
@@ -145,7 +148,7 @@ app.get("/api/users/:_id/logs", function (req, res) {
         userid: userid,
       };
 
-      console.log(username);
+      // console.log(username);
 
       const regex = /^\d{4}-\d{2}-\d{2}$/;
       if (
