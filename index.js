@@ -192,9 +192,9 @@ app.get("/api/users/:_id/logs", function (req, res) {
             };
           });
           res.json({
+            _id: userid,
             username: username,
             count: data.length ? data.length : 0,
-            _id: userid,
             log: data,
           });
         });
