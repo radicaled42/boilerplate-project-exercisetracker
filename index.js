@@ -90,51 +90,35 @@ app.post("/api/users/remove", (request, response) => {
 //   _id: "5fb5853f734231456ccb3b05"
 // }
 
-app.post("/api/users/:_id/exercises", (request, response) => {
-  const userID = request.params._id;
-  const description = request.body.description;
-  const duration = request.body.duration;
-  const date = new Date(request.body.date).toDateString();
-  console.log(
-    `Add Exercise - ID ${userID} - description: ${description} - duration ${duration} - date: ${date}`
-  );
+//Create Exercise
+app.post("/api/users/:_id/exercises", function (req, res) {
+  //Check if user can be find, if not, return user not found
+  User.findById(req.params["_id"], function (err, data) {
+    if (err) return console.log(err);
+    if (data) {
+      //
+      let username = data.username;
+      //Check if date string is exist, if yes, convert to date, if not, apply current date
+      let newExercise = new Exercise({
+        userid: req.params["_id"],
+        description: req.body.description,
+        duration: req.body.duration,
+        date: req.body.date ? new Date(req.body.date) : new Date(),
+      });
 
-  // 1. Find if the user exist - If not, error
-  User.findById(userID, function (err, existingUser) {
-    if (err) {
-      console.log(err);
+      newExercise.save(function (err, data) {
+        if (err) return console.log(err);
+        console.log(data);
+        res.json({
+          username: username,
+          description: data.description,
+          duration: data.duration,
+          date: data.date.toDateString(),
+          _id: data.userid,
+        });
+      });
     } else {
-      console.log("Result : ", existingUser);
-      if (existingUser) {
-        let username = existingUser.username;
-
-        // 2. Create the new exercise object
-        const newExercise = new Exercise({
-          userid: userID,
-          description: description,
-          duration: duration,
-          date: date,
-        });
-
-        // 3. Add the new exercise to the DB
-        newExercise.save(function (err, result) {
-          if (err) {
-            console.log(err);
-          } else {
-            console.log("New exercise create");
-            // 4. response the json of the new exercise
-            response.json({
-              username: username,
-              _id: result.userid,
-              description: result.description,
-              duration: result.duration,
-              date: result.date.toDateString(),
-            });
-          }
-        });
-      } else {
-        response.json({ Error: "Invaild user id." });
-      }
+      res.json({ Error: "Invaild user id." });
     }
   });
 });
