@@ -77,7 +77,7 @@ app.post("/api/users/remove", (request, response) => {
       console.log(err);
     } else {
       console.log("Result :", removeResult);
-      return;
+      response.json({ userDelete: newUsername });
     }
   });
 });
@@ -177,19 +177,19 @@ app.get("/api/users/:_id/logs", function (req, res) {
         .select({ userid: 0 })
         .exec(function (err, data) {
           if (err) return console.error(err);
-          data = data.map((d) => {
+          logData = data.map((d) => {
             return {
               description: d.description,
               duration: d.duration,
               // date: new Date(d.date).toDateString(),
-              date: d.date.toDateString(),
+              date: new Date(d.date).toDateString(),
             };
           });
           res.json({
             _id: userid,
             username: username,
             count: data.length ? data.length : 0,
-            log: data,
+            log: logData,
           });
         });
     } else {
