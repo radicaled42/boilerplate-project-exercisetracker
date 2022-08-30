@@ -178,7 +178,8 @@ app.get("/api/users/:_id/logs", function (req, res) {
             return {
               description: d.description,
               duration: d.duration,
-              date: new Date(d.date).toDateString(),
+              // date: new Date(d.date).toDateString(),
+              date: d.date,
             };
           });
           res.json({
